@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:${IMMAGE_TAG:-latest}
+    env_file: environment.d/uptime-kuma.env
+    environment:
+      PUID: ${HOST_USER_ID:?HOST_USER_ID is required}
+      PGID: ${HOST_GROUP_ID:?HOST_GROUP_ID is required}
+    ports:
+      - ${SERVER_PORT:-3001}:3001
+    volumes:
+      - ${DATA_VOLUME:-uptime-kuma-data}:/app/data
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      com.centurylinklabs.watchtower.scope: uptime-kuma-compose
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    env_file: environment.d/watchtower.env
+    environment:
+      WATCHTOWER_SCOPE: uptime-kuma-compose
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      com.centurylinklabs.watchtower.scope: uptime-kuma-compose
+    restart: unless-stopped
+
+volumes:
+  uptime-kuma-data: {}
